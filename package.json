@@ -1,0 +1,22 @@
+{
+  "name": "parsflix",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "concurrently --names \"CLIENT,SERVER\" -c \"bgBlue.bold,bgMagenta.bold\" \"pnpm --filter ./client dev\" \"pnpm --filter ./server dev\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.8.0",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^7.1.0",
+    "framer-motion": "^12.10.5",
+    "swiper": "^11.2.6"
+  }
+}

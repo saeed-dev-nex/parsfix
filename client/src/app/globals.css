@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+:root {
+  --font-vazir: 'Vazirmatn', sans-serif; /* تعریف متغیر فونت وزیرمتن */
+}
+html {
+  direction: rtl; /* تنظیم جهت متن به راست */
+}
+
+body {
+  font-family: var(--font-vazir), sans-serif; /* استفاده از متغیر فونت وزیرمتن */
+  /* می‌توانید سایر استایل‌های پایه body را اینجا اضافه کنید */
+}

@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// --- Enums ---
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum MovieStatus {
+  PUBLISHED
+  PENDING
+  ARCHIVED
+  UPCOMING
+}
+// Enum جدید برای وضعیت سریال (مشابه فیلم)
+enum SeriesStatus {
+  PENDING   // در انتظار
+  PUBLISHED // منتشر شده (Returning Series, Planned, In Production)
+  ENDED     // پایان یافته
+  CANCELED  // لغو شده
+  ARCHIVED  // بایگانی شده
+  UPCOMING
+}
+enum CreditType {
+  ACTOR
+  DIRECTOR
+  WRITER
+  PRODUCER
+  // ...
+}
+
+// --- Models ---
+
+model User {
+  id                       String    @id @default(cuid())
+  email                    String    @unique
+  password                 String?   // Optional for Google Sign-In
+  name                     String?
+  role                     Role      @default(USER)
+  isActivated              Boolean   @default(false)
+  activationToken          String?   @unique
+  activationTokenExpires   DateTime?
+  profilePictureUrl        String?
+  isBlocked                Boolean   @default(false)
+  blockReason              String?
+  googleId                 String?   @unique
+  activationFailedAttempts Int       @default(0)
+  dateOfBirth              DateTime?
+  gender                   Gender?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  // Relations
+  favoriteMovies Movie[]           @relation("UserFavoriteMovies")
+  favoriteSeries Series[]          @relation("UserFavoriteSeries")
+  favoriteActors Person[]          @relation("UserFavoriteActors")
+  passwordHistory PasswordHistory[]
+  addedMovies     Movie[]           @relation("MoviesAddedByUser")
+  addedSeries     Series[]          @relation("SeriesAddedByUser")
+  comments        Comment[]         @relation("UserComments")
+  ratings         Rating[]          @relation("UserRatings") 
+  @@map("users")
+}
+
+model Movie {
+  id                String      @id @default(cuid())
+  tmdbId            Int         @unique
+  title             String
+  originalTitle     String?
+  tagline           String?
+  description       String?     @db.Text
+  releaseDate       DateTime?
+  runtime           Int?
+  status            MovieStatus @default(PENDING)
+  originalLanguage  String?
+  popularity        Float?
+  imdbId            String?     @unique
+  adult             Boolean     @default(false)
+  posterPath        String?     // Cloudinary URL
+  backdropPath      String?     // Cloudinary URL
+  trailerUrl        String?
+
+  // --- فیلدهای جدید امتیاز ---
+  imdbRating        Float?      // امتیاز IMDb (مثلا 7.8) - اختیاری
+  rottenTomatoesScore Int?    // امتیاز Rotten Tomatoes (مثلا 85) - اختیاری
+  // -------------------------
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  favoritedBy   User[]        @relation("UserFavoriteMovies")
+  genres        Genre[]       @relation("MovieGenres")
+  comments      Comment[]     @relation("MovieComments")
+  ratings       Rating[]      @relation("MovieRatings") // امتیازهای کاربران سایت شما
+  addedById     String?
+  addedBy       User?         @relation("MoviesAddedByUser", fields: [addedById], references: [id], onDelete: SetNull)
+  credits       MovieCredit[] // عوامل فیلم (بازیگر، کارگردان...)
+
+  @@map("movies")
+}
+
+model Genre {
+  id        String  @id @default(cuid())
+  tmdbId    Int     @unique
+  name      String  @unique
+  imageUrl  String? // URL عکس ژانر
+
+  // Relations
+  movies Movie[]  @relation("MovieGenres")
+  series Series[] @relation("SeriesGenres")
+
+  @@map("genres")
+}
+
+model Person {
+  id         String  @id @default(cuid())
+  tmdbId     Int     @unique
+  name       String
+  biography  String? @db.Text
+  imageUrl   String?
+
+  // Relations
+  favoritedBy    User[]        @relation("UserFavoriteActors")
+  movieCredits   MovieCredit[]
+  seriesCredits SeriesCredit[]
+
+  @@map("persons")
+}
+
+model MovieCredit {
+  id            String     @id @default(cuid())
+  role          CreditType
+  characterName String?    // نام کاراکتر برای بازیگر
+
+  // Relations
+  movieId       String
+  movie         Movie      @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  personId      String
+  person        Person     @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([movieId, personId, role, characterName])
+  @@map("movie_credits")
+}
+
+model Series {
+  id                 String       @id @default(cuid())
+  tmdbId             Int          @unique // ID سریال در TMDB (اجباری)
+  title              String       // name
+  originalTitle      String?      // original_name
+  tagline            String?
+  description        String?      @db.Text // overview
+  firstAirDate       DateTime?    // first_air_date
+  lastAirDate        DateTime?    // last_air_date
+  status             SeriesStatus @default(PENDING) // وضعیت انتشار/پخش سریال در سایت شما
+  tmdbStatus         String?      // وضعیت در TMDB ("Returning Series", "Ended", ...)
+  type               String?      // نوع سریال ("Scripted", "Reality", ...)
+  originalLanguage   String?      // زبان اصلی
+  popularity         Float?
+  numberOfSeasons    Int?         // number_of_seasons from details
+  numberOfEpisodes   Int?         // number_of_episodes from details
+  homepage           String?      // لینک وب‌سایت سریال
+  adult              Boolean      @default(false)
+   // --- امتیازهای خارجی ---
+  imdbRating        Float?      // امتیاز IMDb سریال (نیاز به منبع خارجی)
+  rottenTomatoesScore Int?    // امتیاز Rotten Tomatoes سریال (نیاز به منبع خارجی)
+  // -----------------------
+
+  // --- فیلدهای تصاویر (لینک Cloudinary) ---
+  posterPath     String?      // Cloudinary URL
+  backdropPath   String?      // Cloudinary URL
+  // --------------------------------------
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  // --- Relations ---
+  favoritedBy    User[]         @relation("UserFavoriteSeries")
+  genres         Genre[]        @relation("SeriesGenres")
+  addedById      String?        // ادمینی که اضافه کرده
+  addedBy        User?          @relation("SeriesAddedByUser", fields: [addedById], references: [id], onDelete: SetNull)
+  seasons        Season[]       // لیست فصل‌های سریال
+  credits        SeriesCredit[] // لیست عوامل سریال
+  // comments       Comment[]      @relation("SeriesComments") // برای آینده
+  // ratings        Rating[]       @relation("SeriesRatings") // برای آینده
+
+  @@map("series")
+}
+
+// --- مدل جدید برای فصل سریال ---
+model Season {
+  id            String    @id @default(cuid())
+  tmdbId        Int?      @unique // TMDB ID فصل (اختیاری)
+  seasonNumber  Int       // شماره فصل (0 برای ویژه‌ها، 1 به بالا برای عادی)
+  name          String?   // نام فصل
+  overview      String?   @db.Text // توضیحات فصل
+  airDate       DateTime? // تاریخ پخش فصل
+  posterPath    String?   // URL پوستر فصل در Cloudinary
+  episodeCount  Int?      // تعداد قسمت‌های گزارش شده توسط TMDB
+
+  // رابطه با سریال والد
+  seriesId      String
+  series        Series    @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  // رابطه با قسمت‌ها
+  episodes      Episode[]
+
+  @@unique([seriesId, seasonNumber]) // شماره فصل برای هر سریال یکتاست
+  @@map("seasons")
+}
+
+// --- مدل جدید برای قسمت سریال ---
+model Episode {
+  id            String    @id @default(cuid())
+  tmdbId        Int?      @unique // TMDB ID قسمت (اختیاری)
+  episodeNumber Int       // شماره قسمت در فصل
+  seasonNumber  Int       // شماره فصلی که این قسمت به آن تعلق دارد (برای راحتی کوئری)
+  title         String?   // نام قسمت (name در TMDB)
+  overview      String?   @db.Text // توضیحات قسمت
+  airDate       DateTime? // تاریخ پخش قسمت
+  runtime       Int?      // مدت زمان قسمت به دقیقه
+  stillPath     String?   // URL عکس صحنه قسمت در Cloudinary
+
+  // رابطه با فصل والد
+  seasonId      String
+  season        Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  // Note: TMDB vote_average and vote_count for episodes omitted
+
+  @@unique([seasonId, episodeNumber]) // شماره قسمت برای هر فصل یکتاست
+  @@map("episodes")
+}
+
+// --- مدل واسط جدید برای عوامل سریال ---
+model SeriesCredit {
+  id            String     @id @default(cuid())
+  role          CreditType // نقش (بازیگر، کارگردان، نویسنده...)
+  characterName String?    // نام کاراکتر (برای بازیگر)
+  // می‌توانید فیلد 'order' برای ترتیب بازیگران اضافه کنید
+
+  // رابطه با سریال
+  seriesId      String
+  series        Series     @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  // رابطه با شخص
+  personId      String
+  person        Person     @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([seriesId, personId, role, characterName])
+  @@map("series_credits")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User     @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
+  movieId   String?
+  movie     Movie?   @relation("MovieComments", fields: [movieId], references: [id], onDelete: Cascade)
+  // seriesId  String?
+  // series    Series?  @relation("SeriesComments", fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  score     Int      // امتیاز کاربر سایت شما (مثلا 1 تا 10)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User     @relation("UserRatings", fields: [userId], references: [id], onDelete: Cascade)
+  movieId   String?
+  movie     Movie?   @relation("MovieRatings", fields: [movieId], references: [id], onDelete: Cascade)
+  // seriesId  String?
+  // series    Series?  @relation("SeriesRatings", fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("ratings")
+}
+
+model PasswordHistory {
+  id             String   @id @default(cuid())
+  hashedPassword String
+  createdAt      DateTime @default(now())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_histories")
+}
