@@ -13,7 +13,8 @@ import {
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { MediaItem } from '@/data/mockData'; // مسیر mockData را اصلاح کنید
+import { MediaItem } from '@/types';
+// مسیر mockData را اصلاح کنید
 
 interface FeaturedContentSectionProps {
   item: MediaItem;
@@ -117,14 +118,15 @@ export default function FeaturedContentSection({
               sx={{ mb: 2 }}
               flexWrap='wrap'
             >
-              {item.genres.map((genre) => (
-                <Chip
-                  key={genre}
-                  label={genre}
-                  size='small'
-                  sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'grey.200' }}
-                />
-              ))}
+              {item.genres &&
+                item.genres.map((genre) => (
+                  <Chip
+                    key={genre}
+                    label={genre}
+                    size='small'
+                    sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'grey.200' }}
+                  />
+                ))}
               {item.releaseYear && (
                 <Typography
                   variant='body2'

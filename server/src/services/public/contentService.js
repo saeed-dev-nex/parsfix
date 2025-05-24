@@ -340,53 +340,41 @@ export const getTop10SeriesService = async (limit = 10) => {
 /**
  * سریال‌های آتی را واکشی می‌کند.
  * @param {object} [options={}] - گزینه‌های واکشی.
- * @param {number} [options.limit=20] - تعداد آیتم‌ها برای بازگرداندن.
+ * @param {number} [options.limit=20] - تعداد آیتم‌ها.
  * @param {number} [options.page=1] - شماره صفحه.
- * @returns {Promise<Array<object>>} - آرایه‌ای از آیتم‌های رسانه‌ای.
- * @throws {AppError} - اگر خطایی در واکشی رخ دهد.
+ * @returns {Promise<Array<object>>}
  */
 export const getUpcomingSeriesService = async (options = {}) => {
   const { limit = 20, page = 1 } = options;
   console.log('[ContentService] Fetching upcoming series...');
   try {
-    const upcomingSeries = await prisma.series.findMany({
+    const series = await prisma.series.findMany({
       where: {
         status: SeriesStatus.UPCOMING,
-        posterPath: { not: null }, // اختیاری: فقط آن‌هایی که پوستر دارند
-        firstAirDate: { not: null }, // اطمینان از وجود تاریخ برای مرتب‌سازی
+        posterPath: { not: null },
+        firstAirDate: { not: null },
       },
-      orderBy: [
-        { firstAirDate: 'asc' }, // مرتب‌سازی بر اساس تاریخ پخش
-        { popularity: 'desc' }, // معیار دوم مرتب‌سازی
-      ],
-      take: parseInt(limit, 10), // اطمینان از اینکه limit عدد است
-      skip: (parseInt(page, 10) - 1) * parseInt(limit, 10), // برای صفحه‌بندی
+      orderBy: [{ firstAirDate: 'asc' }, { popularity: 'desc' }],
+      take: parseInt(limit, 10),
+      skip: (parseInt(page, 10) - 1) * parseInt(limit, 10),
       select: {
-        // فیلدهایی که برای MediaItem نیاز دارید
         id: true,
         title: true,
         posterPath: true,
         firstAirDate: true,
-        numberOfSeasons: true,
-        genres: { select: { name: true } },
+        // numberOfSeasons: true, // در MediaItem به طور مستقیم نیست، شاید در overview یا جای دیگر
+        description: true, // یا overview
+        genres: { select: { name: true } }, // برای نگاشت به رشته‌های ژانر
         adult: true,
-        description: true,
-        // ... سایر فیلدهای مورد نیاز MediaItem
+        // ... سایر فیلدهای لازم برای mapToMediaItemPlaceholder
       },
     });
-
-    // در اینجا نیازی به اضافه کردن rank نیست
-    return upcomingSeries
-      .map((series) => mapToMediaItem(series, 'show')) // 'show' یا نوع مناسب برای سریال
+    return series
+      .map((s) => mapToMediaItemPlaceholder(s, 'show'))
       .filter((item) => item !== null);
   } catch (error) {
     console.error('[ContentService] Error fetching upcoming series:', error);
-    // اگر از Prisma.PrismaClientKnownRequestError استفاده می‌کنید، باید آن را هم require کنید
-    // if (error instanceof Prisma.PrismaClientKnownRequestError) { // Prisma باید از @prisma/client وارد شود
-    //   throw new Error(`خطا در واکشی سریال‌های آتی از پایگاه داده: ${error.message}`);
-    // }
-    // throw new AppError("خطا در واکشی سریال‌های آتی.", 500); // اگر AppError دارید
-    throw new Error('خطا در واکشی سریال‌های آتی.'); // استفاده از Error استاندارد
+    throw new AppError('خطا در واکشی سریال‌های آتی.', 500);
   }
 };
 
@@ -395,40 +383,37 @@ export const getUpcomingSeriesService = async (options = {}) => {
  * @param {object} [options={}] - گزینه‌های واکشی.
  * @param {number} [options.limit=20] - تعداد آیتم‌ها.
  * @param {number} [options.page=1] - شماره صفحه.
- * @returns {Promise<Array<object>>} - آرایه‌ای از آیتم‌های رسانه‌ای.
- * @throws {Error} - اگر خطایی رخ دهد.
+ * @returns {Promise<Array<object>>}
  */
 export const getUpcomingMoviesService = async (options = {}) => {
   const { limit = 20, page = 1 } = options;
   console.log('[ContentService] Fetching upcoming movies...');
   try {
-    const upcomingMovies = await prisma.movie.findMany({
+    const movies = await prisma.movie.findMany({
       where: {
         status: MovieStatus.UPCOMING,
-        posterPath: { not: null }, // اختیاری
+        posterPath: { not: null },
         releaseDate: { not: null },
       },
       orderBy: [{ releaseDate: 'asc' }, { popularity: 'desc' }],
       take: parseInt(limit, 10),
       skip: (parseInt(page, 10) - 1) * parseInt(limit, 10),
       select: {
-        // فیلدهای لازم برای MediaItem از مدل Movie
         id: true,
         title: true,
         posterPath: true,
         releaseDate: true,
-        // ... سایر فیلدهای فیلم
+        overview: true, // یا description
         genres: { select: { name: true } },
         adult: true,
-        description: true,
+        // ... سایر فیلدهای لازم برای mapToMediaItemPlaceholder
       },
     });
-
-    return upcomingMovies
-      .map((movie) => mapToMediaItem(movie, 'movie')) // 'movie' یا نوع مناسب
+    return movies
+      .map((m) => mapToMediaItemPlaceholder(m, 'movie'))
       .filter((item) => item !== null);
   } catch (error) {
     console.error('[ContentService] Error fetching upcoming movies:', error);
-    throw new Error('خطا در واکشی فیلم‌های آتی.');
+    throw new AppError('خطا در واکشی فیلم‌های آتی.', 500);
   }
 };

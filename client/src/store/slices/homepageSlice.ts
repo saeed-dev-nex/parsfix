@@ -2,21 +2,31 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
 import { apiGet } from '@/lib/apiHelper';
-import { AuthError, HomepageState, MediaItem } from '@/types';
+import {
+  AuthError,
+  HomepageState,
+  MediaItem,
+  MoviesApiResponse,
+} from '@/types';
 
 const initialState: HomepageState = {
   heroSliderItems: [],
   trendingMovies: [],
   recommendedShows: [],
-  featuredItem: [],
+  featuredItem: null,
   top10Movies: [],
   top10Series: [],
+  upcomingMovies: [],
+  upcomingSeries: [],
+
   isLoadingHero: false,
   isLoadingTrendingMovies: false,
   isLoadingRecommendedShows: false,
   isLoadingFeatured: false,
   isLoadingTop10Series: false,
   isLoadingTop10Movies: false,
+  isLoadingUpcomingMovies: false,
+  isLoadingUpcomingSeries: false,
   error: null,
 };
 
@@ -132,6 +142,74 @@ export const fetchTop10Series = createAsyncThunk<MediaItem[]>(
   }
 );
 
+// >>> اضافه کردن Thunk های جدید برای محتوای آتی <<<
+interface FetchUpcomingParams {
+  limit?: number;
+  page?: number;
+}
+
+export const fetchUpcomingMovies = createAsyncThunk<
+  MediaItem[],
+  FetchUpcomingParams | void // پارامترها اختیاری هستند
+>('homepage/fetchUpcomingMovies', async (params, { rejectWithValue }) => {
+  try {
+    const queryParams = params
+      ? new URLSearchParams(
+          Object.entries(params).filter(
+            ([, value]) => value !== undefined
+          ) as any
+        ).toString()
+      : '';
+    const responseData = await apiGet(
+      `/content/upcoming-movies?${queryParams}`
+    );
+    if (
+      responseData &&
+      responseData.status === 'success' &&
+      responseData.data?.items
+    ) {
+      return responseData.data.items;
+    } else {
+      throw new Error(responseData?.message || '...');
+    }
+  } catch (error: any) {
+    return rejectWithValue({
+      message: error.message || 'An unknown error occurred',
+    });
+  }
+});
+
+export const fetchUpcomingSeries = createAsyncThunk<
+  MediaItem[],
+  FetchUpcomingParams | void // پارامترها اختیاری هستند
+>('homepage/fetchUpcomingSeries', async (params, { rejectWithValue }) => {
+  try {
+    const queryParams = params
+      ? new URLSearchParams(
+          Object.entries(params).filter(
+            ([, value]) => value !== undefined
+          ) as any
+        ).toString()
+      : '';
+    const responseData = await apiGet(
+      `/content/upcoming-series?${queryParams}`
+    );
+    if (
+      responseData &&
+      responseData.status === 'success' &&
+      responseData.data?.items
+    ) {
+      return responseData.data.items;
+    } else {
+      throw new Error(responseData?.message || '...');
+    }
+  } catch (error: any) {
+    return rejectWithValue({
+      message: error.message || 'An unknown error occurred',
+    });
+  }
+});
+
 // --- Slice ---
 const homepageSlice = createSlice({
   name: 'homepage',
@@ -200,7 +278,7 @@ const homepageSlice = createSlice({
         fetchFeaturedItem.fulfilled,
         (state, action: PayloadAction<MediaItem>) => {
           state.isLoadingFeatured = false;
-          state.featuredItem = [action.payload];
+          state.featuredItem = action.payload;
         }
       )
       .addCase(fetchFeaturedItem.rejected, (state, action) => {
@@ -231,6 +309,39 @@ const homepageSlice = createSlice({
       })
       .addCase(fetchTop10Series.rejected, (state, action) => {
         state.isLoadingTop10Series = false;
+        state.error = action.payload as AuthError;
+      })
+      .addCase(fetchUpcomingMovies.pending, (state) => {
+        state.isLoadingUpcomingMovies = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchUpcomingMovies.fulfilled,
+        (state, action: PayloadAction<MediaItem[]>) => {
+          state.isLoadingUpcomingMovies = false;
+          state.upcomingMovies = action.payload;
+        }
+      )
+      .addCase(fetchUpcomingMovies.rejected, (state, action) => {
+        state.isLoadingUpcomingMovies = false;
+        state.error = action.payload as AuthError;
+      })
+      // >>> پایان بخش اضافه شده <<<
+
+      // >>> اضافه کردن case ها برای fetchUpcomingSeries <<<
+      .addCase(fetchUpcomingSeries.pending, (state) => {
+        state.isLoadingUpcomingSeries = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchUpcomingSeries.fulfilled,
+        (state, action: PayloadAction<MediaItem[]>) => {
+          state.isLoadingUpcomingSeries = false;
+          state.upcomingSeries = action.payload;
+        }
+      )
+      .addCase(fetchUpcomingSeries.rejected, (state, action) => {
+        state.isLoadingUpcomingSeries = false;
         state.error = action.payload as AuthError;
       });
   },
@@ -266,3 +377,14 @@ export const selectIsLoadingTop10Movies = (state: RootState) =>
   state.homepage.isLoadingTop10Movies;
 export const selectIsLoadingTop10Series = (state: RootState) =>
   state.homepage.isLoadingTop10Series;
+export const selectUpcomingMovies = (state: { homepage: HomepageState }) =>
+  state.homepage.upcomingMovies;
+export const selectIsLoadingUpcomingMovies = (state: {
+  homepage: HomepageState;
+}) => state.homepage.isLoadingUpcomingMovies;
+
+export const selectUpcomingSeries = (state: { homepage: HomepageState }) =>
+  state.homepage.upcomingSeries;
+export const selectIsLoadingUpcomingSeries = (state: {
+  homepage: HomepageState;
+}) => state.homepage.isLoadingUpcomingSeries;

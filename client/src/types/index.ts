@@ -466,6 +466,7 @@ export interface MediaItem {
   heroSubtitle?: string;
   tagline?: string;
   rank?: number;
+
   image?: string;
   heroTagline?: string; // یک شعار یا توضیح کوتاه و جذاب
   qualityBadges?: string[]; // آرایه‌ای از نشان‌های کیفیت مثل ['HD', '5.1 Surround']
@@ -485,10 +486,11 @@ export interface HomepageState {
   heroSliderItems: MediaItem[];
   trendingMovies: MediaItem[];
   recommendedShows: MediaItem[];
-
-  featuredItem: MediaItem[] | null; // برای بخش ویژه
+  featuredItem: MediaItem | null; // برای بخش ویژه
   top10Movies: MediaItem[];
   top10Series: MediaItem[];
+  upcomingMovies: MediaItem[];
+  upcomingSeries: MediaItem[];
 
   isLoadingHero: boolean;
   isLoadingTrendingMovies: boolean;
@@ -496,6 +498,9 @@ export interface HomepageState {
   isLoadingFeatured: boolean;
   isLoadingTop10Movies: boolean;
   isLoadingTop10Series: boolean;
+  isLoadingUpcomingMovies: boolean;
+  isLoadingUpcomingSeries: boolean;
 
   error: AuthError | null;
+ 
 }

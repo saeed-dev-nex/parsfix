@@ -17,6 +17,8 @@ import {
   fetchTop10Movies,
   fetchTop10Series,
   fetchTrendingMovies,
+  fetchUpcomingMovies,
+  fetchUpcomingSeries,
   selectFeaturedItem,
   selectHeroSliderItems,
   selectHomepageError,
@@ -26,10 +28,14 @@ import {
   selectIsLoadingTop10Movies,
   selectIsLoadingTop10Series,
   selectIsLoadingTrendingMovies,
+  selectIsLoadingUpcomingMovies,
+  selectIsLoadingUpcomingSeries,
   selectRecommendedShows,
   selectTop10Movies,
   selectTop10Series,
   selectTrendingMovies,
+  selectUpcomingMovies,
+  selectUpcomingSeries,
 } from '@/store/slices/homepageSlice';
 import { useEffect, useState } from 'react';
 import { apiPost } from '@/lib/apiHelper';
@@ -47,20 +53,24 @@ export default function HomePage() {
   const trendingMovies = useSelector(selectTrendingMovies);
   const recommendedShows = useSelector(selectRecommendedShows);
   const featuredItem = useSelector(selectFeaturedItem);
+  const top10Movies = useSelector(selectTop10Movies);
+  const top10Series = useSelector(selectTop10Series);
+  const upcomingMovies = useSelector(selectUpcomingMovies);
+  const upcomingSeries = useSelector(selectUpcomingSeries);
 
   // --- Reading loading states ---
   const isLoadingHero = useSelector(selectIsLoadingHero);
   const isLoadingTrending = useSelector(selectIsLoadingTrendingMovies);
   const isLoadingRecommended = useSelector(selectIsLoadingRecommendedShows);
   const isLoadingFeatured = useSelector(selectIsLoadingFeatured);
-  const homepageError = useSelector(selectHomepageError);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const top10Movies = useSelector(selectTop10Movies);
-  const top10Series = useSelector(selectTop10Series);
   const isLoadingTopMovies = useSelector(selectIsLoadingTop10Movies);
   const isLoadingTopSeries = useSelector(selectIsLoadingTop10Series);
+  const isLoadingUpcomingMovies = useSelector(selectIsLoadingUpcomingMovies);
+  const isLoadingUpcomingSeries = useSelector(selectIsLoadingUpcomingSeries);
+
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const homepageError = useSelector(selectHomepageError);
 
   // --- واکشی داده‌ها هنگام mount شدن کامپوننت ---
   useEffect(() => {
@@ -70,12 +80,15 @@ export default function HomePage() {
     dispatch(fetchFeaturedItem());
     dispatch(fetchTop10Movies());
     dispatch(fetchTop10Series());
+    dispatch(fetchUpcomingMovies());
+    dispatch(fetchUpcomingSeries());
 
     return () => {
       dispatch(clearHomepageError()); // پاک کردن خطا هنگام خروج
     };
   }, [dispatch]);
   // -----------------------------------------
+  console.log(`this is featuredItem: ${featuredItem}`);
 
   if (isLoading) {
     return (
@@ -176,7 +189,6 @@ export default function HomePage() {
 
     return (
       <LoggedInHomePage
-        user={userWithStringId as User}
         heroItems={heroItems}
         trendingMovies={trendingMovies}
         recommendedShows={recommendedShows}
@@ -190,6 +202,10 @@ export default function HomePage() {
         top10Series={top10Series}
         isLoadingTopMovies={isLoadingTopMovies}
         isLoadingTopSeries={isLoadingTopSeries}
+        upcomingMovies={upcomingMovies}
+        isLoadingUpcomingMovies={isLoadingUpcomingMovies}
+        upcomingSeries={upcomingSeries}
+        isLoadingUpcomingSeries={isLoadingUpcomingSeries}
       />
     ); // اطلاعات کاربر را پاس می‌دهیم
   }

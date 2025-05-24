@@ -6,7 +6,7 @@ import { Box, Container, Typography } from '@mui/material';
 import HeroSlider from '../../pageContent/HeroSlider';
 import ContentCarousel from '@/components/pageContent/ContentCarousel';
 import FeaturedContentSection from '@/components/pageContent/FeaturedContentSection';
-import { MediaItem } from '@/types';
+import { AuthError, MediaItem } from '@/types';
 // import ContentCarousel from '@/components/pageContent/ContentCarousel'; // برای مراحل بعدی
 
 interface LoggedInHomePageProps {
@@ -19,6 +19,14 @@ interface LoggedInHomePageProps {
   top10Series: MediaItem[];
   isLoadingTopMovies: boolean;
   isLoadingTopSeries: boolean;
+  isLoadingTrendingMovies?: boolean;
+  isLoadingRecommendedShows?: boolean;
+  isLoadingFeatured?: boolean;
+  upcomingMovies: MediaItem[];
+  isLoadingUpcomingMovies: boolean;
+  upcomingSeries: MediaItem[];
+  isLoadingUpcomingSeries: boolean;
+  homepageError?: string | null;
 }
 
 export default function LoggedInHomePage({
@@ -31,6 +39,14 @@ export default function LoggedInHomePage({
   top10Series,
   isLoadingTopMovies,
   isLoadingTopSeries,
+  isLoadingTrendingMovies,
+  isLoadingRecommendedShows,
+  isLoadingFeatured,
+  upcomingMovies,
+  isLoadingUpcomingMovies,
+  upcomingSeries,
+  isLoadingUpcomingSeries,
+  homepageError,
 }: LoggedInHomePageProps) {
   // const featuredItem = mockHeroData[1] || mockTrendingMovies[0];
   return (
@@ -76,7 +92,7 @@ export default function LoggedInHomePage({
         />
         <ContentCarousel
           title='به زودی'
-          items={top10Series}
+          items={upcomingMovies}
           idSuffix='upcoming'
         />
         {/* می‌توانید ردیف‌های دیگری اضافه کنید */}
