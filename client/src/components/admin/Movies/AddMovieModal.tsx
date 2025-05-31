@@ -50,7 +50,7 @@ export default function AddMovieModal({
   onSuccess,
 }: AddMovieModalProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const isLoading = useSelector((state: RootState) => state.movies.isLoading);
+  const isLoading = useSelector((state: RootState) => state.movies.isLoadingList);
   const error = useSelector((state: RootState) => state.movies.error);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -426,6 +426,7 @@ export default function AddMovieModal({
               label='وضعیت انتشار'
             >
               <MenuItem value={MovieStatus.PENDING}>در انتظار انتشار</MenuItem>
+              <MenuItem value={MovieStatus.UPCOMING}>به زودی</MenuItem>
               <MenuItem value={MovieStatus.PUBLISHED}>منتظر شده</MenuItem>
               <MenuItem value={MovieStatus.ARCHIVED}>آرشیو شده</MenuItem>
             </Select>

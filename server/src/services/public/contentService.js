@@ -370,7 +370,7 @@ export const getUpcomingSeriesService = async (options = {}) => {
       },
     });
     return series
-      .map((s) => mapToMediaItemPlaceholder(s, 'show'))
+      .map((s) => mapToMediaItem(s, 'show'))
       .filter((item) => item !== null);
   } catch (error) {
     console.error('[ContentService] Error fetching upcoming series:', error);
@@ -403,14 +403,14 @@ export const getUpcomingMoviesService = async (options = {}) => {
         title: true,
         posterPath: true,
         releaseDate: true,
-        overview: true, // یا description
+        description: true, // یا description
         genres: { select: { name: true } },
         adult: true,
         // ... سایر فیلدهای لازم برای mapToMediaItemPlaceholder
       },
     });
     return movies
-      .map((m) => mapToMediaItemPlaceholder(m, 'movie'))
+      .map((m) => mapToMediaItem(m, 'movie'))
       .filter((item) => item !== null);
   } catch (error) {
     console.error('[ContentService] Error fetching upcoming movies:', error);

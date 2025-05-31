@@ -92,12 +92,18 @@ export const getUpcomingSeriesController = async (req, res, next) => {
 
 export const getUpcomingMoviesController = async (req, res, next) => {
   try {
+    console.log('-------------- Begin upcoming movies controller ------------');
+
     const { limit, page } = req.query;
     const options = {};
     if (limit) options.limit = parseInt(limit, 10);
     if (page) options.page = parseInt(page, 10);
 
     const upcomingMovies = await getUpcomingMoviesService(options);
+    console.log(
+      `This is response get from upcoming movies service : [${upcomingMovies}]`
+    );
+
     res.status(200).json({
       status: 'success',
       results: upcomingMovies.length,

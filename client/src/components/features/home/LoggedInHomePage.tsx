@@ -91,7 +91,7 @@ export default function LoggedInHomePage({
           itemProps={{ displayRank: true }}
         />
         <ContentCarousel
-          title='به زودی'
+          title='فیلم های در انتظار اکران'
           items={upcomingMovies}
           idSuffix='upcoming'
         />

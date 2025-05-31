@@ -31,5 +31,5 @@ router.use('/episodes', episodeRoutes);
 // Public Routes
 router.use('/public-movies', publicMovieRoutes);
 router.use('/public-series', publicSeriesRoutes);
-router.use('/content', contentRoutes); // <-- مسیر /api/v1/content
+router.use('/content', contentRoutes);
 export default router;

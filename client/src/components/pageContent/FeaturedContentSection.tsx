@@ -36,7 +36,7 @@ export default function FeaturedContentSection({
           my: 5,
           p: { xs: 2, sm: 3, md: 4 },
           bgcolor: 'rgba(20, 20, 20, 0.7)', // پس‌زمینه کمی شفاف‌تر
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(5px)',
           borderRadius: 3,
           position: 'relative',
           overflow: 'hidden', // برای اینکه گرادینت از کادر بیرون نزند

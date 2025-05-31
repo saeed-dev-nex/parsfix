@@ -152,6 +152,8 @@ export const fetchUpcomingMovies = createAsyncThunk<
   MediaItem[],
   FetchUpcomingParams | void // پارامترها اختیاری هستند
 >('homepage/fetchUpcomingMovies', async (params, { rejectWithValue }) => {
+  console.log('<-------------- UPCOMING MOVIES SLICE ---------------->');
+
   try {
     const queryParams = params
       ? new URLSearchParams(
@@ -160,9 +162,10 @@ export const fetchUpcomingMovies = createAsyncThunk<
           ) as any
         ).toString()
       : '';
-    const responseData = await apiGet(
-      `/content/upcoming-movies?${queryParams}`
-    );
+
+    const responseData = await apiGet(`/content/upcoming-movies`);
+    console.log('Responce recived from server UCOMINGMOVIE : ', responseData);
+
     if (
       responseData &&
       responseData.status === 'success' &&

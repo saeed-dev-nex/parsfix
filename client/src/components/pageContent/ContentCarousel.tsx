@@ -30,7 +30,7 @@ export default function ContentCarousel({
   const navigationPrevEl = `.swiper-button-prev-${idSuffix}`;
   const navigationNextEl = `.swiper-button-next-${idSuffix}`;
 
-  // if (!items || items.length === 0) return null; // اگر آیتمی نبود، رندر نکن
+   if (!items || items.length === 0) return null; // اگر آیتمی نبود، رندر نکن
 
   return (
     <Box sx={{ my: 4, position: 'relative' }}>

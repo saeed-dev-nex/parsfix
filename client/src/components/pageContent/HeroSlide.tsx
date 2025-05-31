@@ -113,7 +113,7 @@ export default function HeroSlide({ item, isActive }: HeroSlideProps) {
                   mb: 1,
                   textShadow: '2px 2px 8px rgba(0,0,0,0.7)',
                   background:
-                    'linear-gradient(45deg, #a06119 10%, #FF9100 90%)',
+                    'linear-gradient(45deg, #dddddd 10%, #f3f3f3 90%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -281,12 +281,12 @@ export default function HeroSlide({ item, isActive }: HeroSlideProps) {
                   py: 1,
                   fontWeight: 'bold',
                   background:
-                    'linear-gradient(45deg, #FF4081 30%, #FF9100 90%)',
+                    'linear-gradient(45deg, #ff1818 30%, #ff4800 90%)',
                   boxShadow: '0 3px 15px rgba(255, 64, 129, 0.4)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     background:
-                      'linear-gradient(45deg, #FF4081 40%, #FF9100 100%)',
+                      'linear-gradient(45deg, #ff1818 40%, #ff4800 100%)',
                     transform: 'translateY(-2px)',
                     boxShadow: '0 5px 20px rgba(255, 64, 129, 0.6)',
                   },

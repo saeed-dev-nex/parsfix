@@ -1,4 +1,9 @@
-import { getPublicMovieDetailsByIdService, getPublicMoviesService } from '../../services/public/publicMovieService.js';
+import {
+  getMovieFilterOptionsService,
+  getNewestMoviesSliderService,
+  getPublicMovieDetailsByIdService,
+  getPublicMoviesService,
+} from '../../services/public/publicMovieService.js';
 import AppError from '../../utils/AppError.js';
 
 /**
@@ -13,7 +18,11 @@ export const getPublicMoviesList = async (req, res, next) => {
       limit: limit ? parseInt(limit, 10) : undefined,
       sortBy: sortBy,
       sortOrder: sortOrder,
-      // genreId: genreId as string, search: search as string,
+      genreId: genreId,
+      year: year ? parseInt(year, 10) : undefined,
+      minImdbRating: minImdbRating ? parseFloat(minImdbRating) : undefined,
+      country: country,
+      search: search,
     });
     res.status(200).json({ status: 'success', data: result });
   } catch (error) {
@@ -35,6 +44,31 @@ export const getPublicMovieDetails = async (req, res, next) => {
     }
     const movie = await getPublicMovieDetailsByIdService(id);
     res.status(200).json({ status: 'success', data: { movie } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMovieFilterOptionsController = async (req, res, next) => {
+  console.log('--- Entered getMovieFilterOptionsController ---');
+  try {
+    const filterOptions = await getMovieFilterOptionsService();
+    res.status(200).json({
+      status: 'success',
+      message: 'گزینه‌های فیلتر با موفقیت دریافت شد.',
+      data: filterOptions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNewestMoviesSliderController = async (req, res, next) => {
+  try {
+    const items = await getNewestMoviesSliderService(
+      parseInt(req.query.limit, 10)
+    );
+    res.status(200).json({ status: 'success', data: { items } });
   } catch (error) {
     next(error);
   }

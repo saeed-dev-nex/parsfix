@@ -502,5 +502,32 @@ export interface HomepageState {
   isLoadingUpcomingSeries: boolean;
 
   error: AuthError | null;
- 
+}
+
+// ---------->> Types of public movies page <<----------
+export interface MovieFilterOptions {
+  genres: Genre[];
+  years: number[];
+  countries: string[];
+  ageRatings: string[];
+}
+
+export interface FetchPublicMoviesParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  genreId?: string | null;
+  year?: number | null;
+  minImdbRating?: number | null;
+  country?: string | null;
+  search?: string | null;
+}
+
+export interface PublicMoviesApiResponse {
+  movies: MovieAdminList[];
+  totalMovies: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
 }
